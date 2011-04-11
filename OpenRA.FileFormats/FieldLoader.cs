@@ -119,6 +119,13 @@ namespace OpenRA.FileFormats
 			else if (fieldType == typeof(Color))
 			{
 				var parts = x.Split(',');
+				if (parts.Length == 1)
+				{
+					var col = Color.FromName(parts[0]);
+					if (col.A == 0)
+						col = Color.Black;
+					return col;
+				}
 				if (parts.Length == 3)
 					return Color.FromArgb(int.Parse(parts[0]).Clamp(0, 255), int.Parse(parts[1]).Clamp(0, 255), int.Parse(parts[2]).Clamp(0, 255));
 				if (parts.Length == 4)
