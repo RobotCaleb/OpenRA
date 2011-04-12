@@ -50,8 +50,6 @@ E1:
 	-RenderInfantry:
 	RenderInfantryProne:
 		IdleAnimations: idle1,idle2
-	Banner:
-		BannerText: Harpy
 
 E2:
 	Inherits: ^Infantry

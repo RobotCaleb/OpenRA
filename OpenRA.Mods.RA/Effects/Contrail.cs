@@ -24,22 +24,26 @@ namespace OpenRA.Mods.RA
         public readonly Color Color = Color.White;
 		public readonly bool UsePlayerColor = true;
 
-		public object Create(ActorInitializer init) { return new Contrail(init.self, this); }
+		virtual public object Create(ActorInitializer init) { return new Contrail(init.self, this); }
 	}
 
 	class Contrail : ITick, IPostRender
 	{
-		private ContrailInfo Info = null;
+		protected ContrailInfo Info = null;
 
 		private Turret ContrailTurret = null;
 
-        ContrailHistory history;
+		protected int TrailLength = 0;
+
+        protected Lazy<ContrailHistory> history;
 
 		public Contrail(Actor self, ContrailInfo info)
 		{
 			Info = info;
 			ContrailTurret = new Turret(Info.ContrailOffset);
-            history = new ContrailHistory(Info.TrailLength, Info.UsePlayerColor ? ContrailHistory.ChooseColor(self) : Info.Color);
+			TrailLength = Info.TrailLength;
+
+            history = Lazy.New(() => new ContrailHistory(TrailLength, Info.UsePlayerColor ? ContrailHistory.ChooseColor(self) : Info.Color));
 		}
 
 		public void Tick(Actor self)
@@ -48,15 +52,15 @@ namespace OpenRA.Mods.RA
 			var altitude = new float2(0, self.Trait<IMove>().Altitude);
 
 			var pos = self.CenterLocation - Combat.GetTurretPosition(self, facing, ContrailTurret) - altitude;
-            history.Tick(pos);
+            history.Value.Tick(pos);
 		}
 
-        public void RenderAfterWorld(WorldRenderer wr, Actor self) { history.Render(self); }
+        virtual public void RenderAfterWorld(WorldRenderer wr, Actor self) { history.Value.Render(self); }
 	}
 
     class ContrailHistory
     {
-        List<float2> positions = new List<float2>();
+        public List<float2> positions = new List<float2>();
         readonly int TrailLength;
         readonly Color Color;
         readonly int StartSkip;
