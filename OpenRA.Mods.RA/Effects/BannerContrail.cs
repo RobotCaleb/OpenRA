@@ -24,7 +24,7 @@ namespace OpenRA.Mods.RA.Effects
 			: base(self, info)
 		{
 			var bannerInfo = ((BannerContrailInfo)Info);
-			BannerText = bannerInfo.BannerText;
+			BannerText = "   " + bannerInfo.BannerText;
 
 			TrailLength = BannerText.Length * LetterWidth;
 		}
@@ -33,7 +33,19 @@ namespace OpenRA.Mods.RA.Effects
 		{
 			if (history.Value.positions.Count == 0 || BannerText == "")
 				return;
-			var r = (new Random()).Next(BannerText.Length);
+
+			var extents = Game.Renderer.BoldFont.Measure("p").ToFloat2();
+			for (var i = 0; i < history.Value.positions.Count; ++i)
+			{
+				var pos = history.Value.positions[i];
+
+				pos.Y += (float)Math.Sin(Math.PI / 3f * i + Game.LocalTick * 0.5f) * 1f + 2f;
+
+				Game.Renderer.LineRenderer.FillRect(
+					new RectangleF(pos.X, pos.Y, extents.X, extents.Y),
+					Color.White);
+
+			}
 			for (var i = 0; i < BannerText.Length; ++i)
 			{
 				if (i * LetterWidth >= history.Value.positions.Count)
@@ -41,13 +53,11 @@ namespace OpenRA.Mods.RA.Effects
 
 				var pos = history.Value.positions[history.Value.positions.Count - i * LetterWidth - 1] - Game.viewport.Location;
 
-				//pos.Y += (float)Math.Sin(/* magic sauce here*/) * 5;
+				pos.Y += (float)Math.Sin(Math.PI / 3f * i + Game.LocalTick * 0.5f) * 1f;
 
-				Game.Renderer.BoldFont.DrawTextWithContrast(BannerText.Substring(i, 1),
-					pos,
-					Color.White,
-					Color.Black,
-					1);
+				var l = BannerText.Substring(i, 1);
+
+				Game.Renderer.BoldFont.DrawText(l, pos, Color.Black);
 			}
 		}
 	}
